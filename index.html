@@ -4,127 +4,126 @@
   <meta charset="utf-8">
   <title>The Ultimate 3D Optical Illusion</title>
   <style>
-    /* Make the canvas fill the window with a black background */
     body { margin: 0; overflow: hidden; background: #000; }
     canvas { display: block; }
   </style>
 </head>
 <body>
-  <!-- Three.js from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <!-- OrbitControls for interactive camera movement -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.128.0/examples/js/controls/OrbitControls.js"></script>  <!-- Corrected path -->
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <!-- Load OrbitControls and make it available as a property of THREE-->
   <script>
-    (function(){
-      // Create scene, camera, and renderer
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // Store the THREE object in a variable, so we don't shadow the global
+        var myTHREE = THREE;
+  </script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script>
+
+    try { // Added try-catch block
+      //Use myTHREE so that we do not overwrite the global THREE with one extended with OrbitControls
+      const scene = new myTHREE.Scene();
+      const camera = new myTHREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.set(0, 0, 10);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      const renderer = new myTHREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
-      // Enable smooth interactive controls
-      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      // OrbitControls - use myTHREE here
+      const controls = new myTHREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
 
-      // Create custom shader material for our torus knot optical illusion
+      // Shader uniforms
       const uniforms = {
         time: { value: 0.0 },
-        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        resolution: { value: new myTHREE.Vector2(window.innerWidth, window.innerHeight) }
       };
 
+      // Vertex shader
       const vertexShader = `
         varying vec2 vUv;
-        void main(){
+        void main() {
           vUv = uv;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `;
 
+      // Fragment shader
       const fragmentShader = `
         uniform float time;
-        uniform vec2 resolution; // Use resolution uniform
+        uniform vec2 resolution;
         varying vec2 vUv;
 
-        void main(){
-          // Center the UV coordinates, and scale them based on resolution
+        void main() {
           vec2 pos = (vUv - 0.5) * 2.0;
-          pos.x *= resolution.x / resolution.y; // Correct aspect ratio
+          pos.x *= resolution.x / resolution.y; // Aspect ratio correction
 
           float r = length(pos);
           float angle = atan(pos.y, pos.x);
 
-          // Create a swirling pattern that evolves over time
           float pattern = sin(10.0 * r - time * 2.0 + angle * 5.0);
-
-          // Map the pattern to a dynamic color gradient
           vec3 color = mix(vec3(0.1, 0.0, 0.3), vec3(0.9, 0.7, 0.0), smoothstep(-1.0, 1.0, pattern));
-
-          // Add a pulsing effect to further enhance the illusion
           color *= 0.5 + 0.5 * sin(time + r * 10.0);
           gl_FragColor = vec4(color, 1.0);
         }
       `;
 
-      const shaderMaterial = new THREE.ShaderMaterial({
+      // Shader material
+      const shaderMaterial = new myTHREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
-        side: THREE.DoubleSide
+        side: myTHREE.DoubleSide
       });
 
-      // Create a torus knot geometry and apply our shader material
-      const geometry = new THREE.TorusKnotGeometry(2, 0.5, 200, 32);
-      const torusKnot = new THREE.Mesh(geometry, shaderMaterial);
+      // Torus knot
+      const geometry = new myTHREE.TorusKnotGeometry(2, 0.5, 200, 32);
+      const torusKnot = new myTHREE.Mesh(geometry, shaderMaterial);
       scene.add(torusKnot);
 
-      // Create a dynamic particle field as a background to boost depth and parallax
-      const particlesGeometry = new THREE.BufferGeometry();
-      const particlesCount = 10000;
+      // Particles (reduced count for testing)
+      const particlesGeometry = new myTHREE.BufferGeometry();
+      const particlesCount = 1000; // Reduced particle count
       const positions = new Float32Array(particlesCount * 3);
 
-      for (let i = 0; i < particlesCount; i++){
-        positions[i * 3]     = (Math.random() - 0.5) * 200;
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 200;
+      for (let i = 0; i < particlesCount; i++) {
+        positions[i * 3]     = (Math.random() - 0.5) * 20; // Smaller range
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
       }
 
-      particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      particlesGeometry.setAttribute('position', new myTHREE.BufferAttribute(positions, 3));
 
-      const particlesMaterial = new THREE.PointsMaterial({
+      const particlesMaterial = new myTHREE.PointsMaterial({
         color: 0xffffff,
         size: 0.2,
         transparent: true,
         opacity: 0.5
       });
 
-      const particleField = new THREE.Points(particlesGeometry, particlesMaterial);
+      const particleField = new myTHREE.Points(particlesGeometry, particlesMaterial);
       scene.add(particleField);
 
-      // Update renderer and camera on window resize
-      window.addEventListener('resize', onWindowResize, false);
-      function onWindowResize(){
+      // Resize handler
+      function onWindowResize() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
         uniforms.resolution.value.set(window.innerWidth, window.innerHeight);
+        renderer.render(scene, camera); // Explicit render call
       }
+      window.addEventListener('resize', onWindowResize, false);
 
-      // Animation loop: update time, rotate the torus knot, and render the scene
-      const clock = new THREE.Clock();
-      function animate(){
+
+      // Animation loop
+      const clock = new myTHREE.Clock();
+      function animate() {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
         uniforms.time.value += delta;
 
-        // Slow, hypnotic rotation for the torus knot
         torusKnot.rotation.x += 0.01;
         torusKnot.rotation.y += 0.02;
-
-        // Subtle rotation of the particle field enhances the parallax effect
         particleField.rotation.y += 0.001;
 
         controls.update();
@@ -132,7 +131,10 @@
       }
 
       animate();
-    })();
+
+    } catch (error) {
+      console.error("An error occurred:", error); // Log the error
+    }
   </script>
 </body>
 </html>
