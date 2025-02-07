@@ -10,15 +10,17 @@
   </style>
 </head>
 <body>
-  <!-- Use a module script to import Three.js and OrbitControls -->
+  <canvas id="myCanvas"></canvas>  <!-- Give the canvas an ID -->
   <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js';
     import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js';
 
-    // Create the renderer and append it to the document
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    // Get the canvas element
+    const canvas = document.getElementById('myCanvas');
+
+    // Create the renderer and append it to the canvas
+    const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas }); // Specify canvas
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
 
     // =====================
     // Main Scene Setup
