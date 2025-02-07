@@ -10,27 +10,33 @@
 </head>
 <body>
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <!-- Load OrbitControls and make it available as a property of THREE-->
+  <script>
+        // Store the THREE object in a variable, so we don't shadow the global
+        var myTHREE = THREE;
+  </script>
   <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script>
+
     try { // Added try-catch block
-      // Scene, camera, and renderer
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      //Use myTHREE so that we do not overwrite the global THREE with one extended with OrbitControls
+      const scene = new myTHREE.Scene();
+      const camera = new myTHREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.set(0, 0, 10);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      const renderer = new myTHREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
-      // OrbitControls
-      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      // OrbitControls - use myTHREE here
+      const controls = new myTHREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
 
       // Shader uniforms
       const uniforms = {
         time: { value: 0.0 },
-        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        resolution: { value: new myTHREE.Vector2(window.innerWidth, window.innerHeight) }
       };
 
       // Vertex shader
@@ -63,20 +69,20 @@
       `;
 
       // Shader material
-      const shaderMaterial = new THREE.ShaderMaterial({
+      const shaderMaterial = new myTHREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: vertexShader,
         fragmentShader: fragmentShader,
-        side: THREE.DoubleSide
+        side: myTHREE.DoubleSide
       });
 
       // Torus knot
-      const geometry = new THREE.TorusKnotGeometry(2, 0.5, 200, 32);
-      const torusKnot = new THREE.Mesh(geometry, shaderMaterial);
+      const geometry = new myTHREE.TorusKnotGeometry(2, 0.5, 200, 32);
+      const torusKnot = new myTHREE.Mesh(geometry, shaderMaterial);
       scene.add(torusKnot);
 
       // Particles (reduced count for testing)
-      const particlesGeometry = new THREE.BufferGeometry();
+      const particlesGeometry = new myTHREE.BufferGeometry();
       const particlesCount = 1000; // Reduced particle count
       const positions = new Float32Array(particlesCount * 3);
 
@@ -86,16 +92,16 @@
         positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
       }
 
-      particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      particlesGeometry.setAttribute('position', new myTHREE.BufferAttribute(positions, 3));
 
-      const particlesMaterial = new THREE.PointsMaterial({
+      const particlesMaterial = new myTHREE.PointsMaterial({
         color: 0xffffff,
         size: 0.2,
         transparent: true,
         opacity: 0.5
       });
 
-      const particleField = new THREE.Points(particlesGeometry, particlesMaterial);
+      const particleField = new myTHREE.Points(particlesGeometry, particlesMaterial);
       scene.add(particleField);
 
       // Resize handler
@@ -110,7 +116,7 @@
 
 
       // Animation loop
-      const clock = new THREE.Clock();
+      const clock = new myTHREE.Clock();
       function animate() {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
