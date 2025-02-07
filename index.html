@@ -29,8 +29,8 @@
       );
       mainCamera.position.set(0, 0, 10);
 
-      // OrbitControls for interactivity in the main scene
-      const controls = new THREE.OrbitControls(mainCamera, renderer.domElement);
+      // Use the global OrbitControls (not THREE.OrbitControls)
+      const controls = new OrbitControls(mainCamera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.1;
 
@@ -208,4 +208,5 @@
   </script>
 </body>
 </html>
+
 
